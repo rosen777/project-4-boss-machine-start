@@ -9,8 +9,10 @@ const {
   updateInstanceInDatabase,
   addToDatabase,
   deleteFromDatabasebyId,
+  createMeeting,
+  deleteAllFromDatabase,
 } = require("./server/db");
-const { acceptsCharsets } = require('express/lib/request');
+const checkMillionDollarIdea = require('./server/checkMillionDollarIdea');
 
 module.exports = app;
 
@@ -112,6 +114,7 @@ apiRouter.put('/ideas/:ideaId', (req, res, next) => {
 apiRouter.post('/ideas', (req, res, next) => {
   const newIdea = addToDatabase("ideas", req.body);
   if (newIdea) {
+      checkMillionDollarIdea(req, res, next);
     res.status(201).send(newIdea);
   } else {
     res.status(404).send();
@@ -125,6 +128,32 @@ apiRouter.delete('/ideas/:ideaId', (req, res, next) => {
     res.status(204).send("No Content");
   } else {
     res.status(404).send();
+  }
+});
+
+
+let meetings = [];
+
+meetings = getAllFromDatabase("meetings");
+
+apiRouter.get('/meetings',  (req, res, next) => {
+    res.send(meetings)
+});
+
+apiRouter.post('/meetings', (req, res, next) => {
+    const newMeeting = createMeeting();
+    if (newMeeting) {
+      addToDatabase("meetings", newMeeting);
+      res.status(201).send(newMeeting);
+    } else {
+      res.status(404).send();
+    }
+})
+
+apiRouter.delete('/meetings', (req, res, next) => {
+  if (meetings.length > 1) {
+    meetings = deleteAllFromDatabase("meetings");
+    res.status(204).send("No Content");
   }
 });
 
